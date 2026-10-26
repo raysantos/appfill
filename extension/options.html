@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AppFill Settings</title>
+<link rel="stylesheet" href="options.css">
+</head>
+<body>
+<header>
+  <div class="wrap head">
+    <div class="brand"><img src="icons/48.png" alt="" width="32" height="32"><div><h1>AppFill</h1><p>Job application autofill</p></div></div>
+    <span id="status" class="status" aria-live="polite"></span>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <p class="private"><strong>Private by design:</strong> everything here stays in this browser on this computer. AppFill has no account, no sync and no server, and it only fills the form you right-click in.</p>
+    <p><strong>How it works:</strong> right-click any application page → <em>Fill this application</em>. Fields it can't place get an amber outline. After you finish one by hand, right-click → <em>Remember my answers on this site</em> and next time that site fills completely.</p>
+  </section>
+
+  <form id="profile" autocomplete="off"></form>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Custom answers</h2>
+        <p class="sub">For any question the profile doesn't cover. List a few words the question would contain, separated by commas — a field matches when all the words of one phrase appear in it.</p>
+      </div>
+      <button type="button" id="addCustom" class="btn">Add answer</button>
+    </div>
+    <div id="customList" class="custom-list"></div>
+    <p id="customEmpty" class="empty">No custom answers yet. Good ones to add: <em>why do you want, why this company</em> · <em>cover letter</em> · <em>gender</em> · <em>veteran</em> · <em>disability</em>.</p>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><div><h2>Remembered sites</h2><p class="sub">Answers saved with “Remember my answers on this site.”</p></div></div>
+    <ul id="sites" class="sites"></ul>
+    <p id="sitesEmpty" class="empty">None yet.</p>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><div><h2>Backup</h2><p class="sub">Everything stays in this browser only. Export a copy to move it to another computer. The backup file isn’t encrypted, so keep it out of shared or cloud-synced folders, and delete it once it’s imported.</p></div></div>
+    <div class="row-btns">
+      <button type="button" id="export" class="btn">Export settings</button>
+      <label class="btn">Import settings<input type="file" id="import" accept="application/json" hidden></label>
+    </div>
+  </section>
+</main>
+
+<template id="customTpl">
+  <div class="custom">
+    <label><span>Question contains</span><input class="q" placeholder="why do you want, why are you interested"></label>
+    <label><span>Answer</span><textarea class="a" rows="3"></textarea></label>
+    <button type="button" class="remove" aria-label="Remove answer">Remove</button>
+  </div>
+</template>
+
+<script src="fields.js"></script>
+<script src="options.js"></script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AppFill · Job application autofill for Chrome</title>
+<meta name="description" content="AppFill fills job applications from one right-click, outlines what it can't answer, and keeps everything on your own computer.">
+<meta name="theme-color" content="#f7f4f2">
+<script>try{if(localStorage.getItem("theme")==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}</script>
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@400;600;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=swap">
+<style>
+/* One column, 720px. The download is the only filled button; everything else stays quiet. */
+:root {
+  --bg: #f7f4f2; --card: #ffffff; --ink: #1d1b1a; --muted: #6e6662; --line: #e7e1dd;
+  --accent: #e8543f; --accent-2: #ffb38a; --accent-ink: #ffffff; --wash: #fff1ea;
+  --ok: #1f9d55; --warn: #c97400;
+  --head: "Sofia Sans", "Segoe UI", system-ui, sans-serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #161413; --card: #201d1c; --ink: #f3efed; --muted: #a49c97; --line: #34302d;
+  --accent: #ff7a63; --accent-2: #ffb38a; --accent-ink: #1d1b1a; --wash: #2b211d;
+  --ok: #3cc47f; --warn: #f0a23a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 var(--body); transition: background .3s, color .3s; }
+.wrap { max-width: 760px; margin: 0 auto; padding-inline: 20px; }
+.ms { font-family: "Material Symbols Rounded"; font-weight: normal; font-style: normal; font-size: 22px; line-height: 1; display: inline-block; vertical-align: middle; -webkit-font-smoothing: antialiased; font-variation-settings: "FILL" 0; width: 1em; overflow: hidden; }
+h1, h2, h3 { font-family: var(--head); letter-spacing: -.01em; text-wrap: balance; margin: 0; }
+a { color: var(--accent); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+
+header.top { padding-block: 20px; }
+header.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; font: 800 20px var(--head); color: var(--ink); text-decoration: none; }
+.brand img { width: 32px; height: 32px; }
+.top-links { display: flex; align-items: center; gap: 4px; }
+.icon-btn { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 0; background: transparent; color: var(--ink); cursor: pointer; text-decoration: none; }
+.icon-btn:hover { background: var(--line); }
+
+.hero { padding-block: 40px 8px; }
+.hero h1 { font-size: clamp(44px, 9vw, 76px); font-weight: 800; line-height: 1; letter-spacing: -.03em; }
+.hero h1 span { background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lede { font-size: clamp(19px, 2.4vw, 22px); line-height: 1.5; color: var(--muted); margin: 18px 0 0; max-width: 36em; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 28px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 13px 22px; border-radius: 999px; font: 600 17px var(--head); text-decoration: none; border: 1px solid var(--line); color: var(--ink); background: var(--card); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { filter: brightness(1.06); }
+.btn:not(.btn-primary):hover { border-color: var(--accent); }
+.fine { font-size: 14px; color: var(--muted); margin: 12px 0 0; }
+
+.demo { margin: 40px 0 0; }
+.demo video { display: block; width: 100%; height: auto; border-radius: 16px; border: 1px solid var(--line); background: var(--card); }
+.demo figcaption { font-size: 14px; color: var(--muted); margin-top: 10px; }
+
+section { padding-block: 56px 0; }
+section > h2 { font-size: clamp(26px, 4vw, 34px); line-height: 1.15; font-weight: 800; margin-bottom: 18px; }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.list li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; align-items: start; }
+.list .ms { color: var(--accent); margin-top: 1px; }
+.list b { font-family: var(--head); font-weight: 600; font-size: 18px; }
+
+.steps { counter-reset: s; list-style: none; margin: 0; padding: 0; display: grid; gap: 0; background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding: 18px 20px; border-top: 1px solid var(--line); }
+.steps li:first-child { border-top: 0; }
+.steps li::before { content: counter(s); display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--wash); color: var(--accent); font: 800 16px var(--head); }
+code { font: 15px ui-monospace, "Cascadia Mono", Consolas, monospace; background: var(--wash); padding: .1em .4em; border-radius: 5px; overflow-wrap: anywhere; }
+.copy { font: 600 13px var(--head); margin-left: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px; padding: 2px 10px; cursor: pointer; }
+
+.menu { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 6px 0; max-width: 460px; font-size: 15px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+.menu .it { display: grid; grid-template-columns: minmax(0, 1fr); padding: 9px 16px; }
+.menu .it b { font-weight: 600; }
+.menu .it span { color: var(--muted); font-size: 14px; }
+.menu hr { border: 0; border-top: 1px solid var(--line); margin: 6px 0; }
+
+.trap { display: flex; gap: 12px; background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--warn); border-radius: 12px; padding: 16px 18px; margin-top: 18px; }
+.trap .ms { color: var(--warn); }
+
+footer { margin-top: 72px; padding-block: 24px 40px; border-top: 1px solid var(--line); }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; color: var(--muted); }
+footer a { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { body { transition: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./"><img src="media/icon-128.png" alt="" width="32" height="32">AppFill</a>
+    <nav class="top-links" aria-label="Links">
+      <a class="icon-btn" href="https://raysandesigns.com/appfill.html" title="Read the case study" aria-label="Read the case study"><span class="ms" aria-hidden="true">article</span></a>
+      <a class="icon-btn" href="https://github.com/raysantos/appfill" title="Source code on GitHub" aria-label="Source code on GitHub"><span class="ms" aria-hidden="true">code</span></a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero" aria-labelledby="h1">
+    <h1 id="h1">Right-click.<br><span>Application filled.</span></h1>
+    <p class="lede">AppFill is a Chrome extension that fills job applications from one profile, outlines anything it can't answer, and keeps every detail on your own computer.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="appfill.zip" download><span class="ms" aria-hidden="true">download</span>Download AppFill 1.2</a>
+      <a class="btn" href="#install"><span class="ms" aria-hidden="true">list_alt</span>How to install</a>
+    </div>
+    <p class="fine">Free · Chrome and Edge on Windows or Mac · 28 KB · No account</p>
+    <figure class="demo">
+      <video src="media/fill.mp4" poster="media/fill-poster.webp" width="1440" height="792" autoplay muted loop playsinline preload="metadata" aria-label="A right-click on a job application, Fill this application, and the fields fill with green outlines while the one unanswerable dropdown gets an amber outline."></video>
+      <figcaption>One right-click fills what it knows. Amber means that one's yours. Sample data shown.</figcaption>
+    </figure>
+  </section>
+
+  <section aria-labelledby="private">
+    <h2 id="private">Your details never leave your computer</h2>
+    <ul class="list">
+      <li><span class="ms" aria-hidden="true">lock</span><span><b>No account, no sync, no server.</b> Your profile lives in Chrome's local storage, and the code makes no network requests.</span></li>
+      <li><span class="ms" aria-hidden="true">ads_click</span><span><b>Only the form you point at.</b> Ads, chat widgets and other frames on the page are never filled.</span></li>
+      <li><span class="ms" aria-hidden="true">visibility_off</span><span><b>Trap fields stay empty.</b> Hidden inputs that ask for your details are skipped, and AppFill tells you they're there.</span></li>
+      <li><span class="ms" aria-hidden="true">shield</span><span><b>Private answers aren't remembered.</b> Social Security, date of birth, bank, card, license and passport fields are never saved.</span></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="use">
+    <h2 id="use">Everything is in the right-click menu</h2>
+    <div class="menu" role="presentation">
+      <div class="it"><b>Fill this application</b><span>Fills every empty field it recognizes.</span></div>
+      <div class="it"><b>Check this form for hidden fields</b><span>Looks for trap fields before you type anything.</span></div>
+      <div class="it"><b>Fill this field with… ▸</b><span>Pick any saved value for one field.</span></div>
+      <hr>
+      <div class="it"><b>Remember my answers on this site</b><span>Finish a form once by hand and the next one on that site fills too.</span></div>
+      <div class="it"><b>Forget answers for this site</b><span>Clears what was saved there.</span></div>
+    </div>
+    <div class="trap">
+      <span class="ms" aria-hidden="true">warning</span>
+      <span><b>What's a trap field?</b> An input a page makes invisible: see-through, a few pixels wide, or pushed off the screen. Some sites use them to catch spam bots; others use them to collect details you never see. AppFill never fills them.</span>
+    </div>
+  </section>
+
+  <section id="install" aria-labelledby="inst">
+    <h2 id="inst">Install in two minutes</h2>
+    <ol class="steps">
+      <li><span><b>Download and unzip.</b> Right-click <code>appfill.zip</code> and choose Extract All. Keep the folder somewhere permanent, like Documents, because Chrome loads it from there.</span></li>
+      <li><span><b>Open the extensions page.</b> Type <code id="ext-url">chrome://extensions</code><button class="copy" type="button" data-copy="chrome://extensions">Copy</button> into the address bar. In Edge it's <code>edge://extensions</code>.</span></li>
+      <li><span><b>Turn on Developer mode.</b> The switch is at the top right of the page.</span></li>
+      <li><span><b>Load it.</b> Click <b>Load unpacked</b> and choose the unzipped <code>appfill</code> folder.</span></li>
+      <li><span><b>Add your details.</b> The settings page opens. Fill in what you want AppFill to use. It saves as you type.</span></li>
+    </ol>
+    <p class="fine">Updating? Replace the files in the same folder, then click the reload arrow on AppFill's card in <code>chrome://extensions</code>.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Designed and built by <a href="https://raysandesigns.com">Ray Santos</a> · <a href="https://raysandesigns.com/appfill.html">Read the case study</a></span>
+    <button class="icon-btn theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode" title="Switch to dark mode"><span class="ms" aria-hidden="true">dark_mode</span></button>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const root = document.documentElement, btn = document.querySelector('.theme-toggle');
+  const sync = () => {
+    const dark = root.getAttribute('data-theme') === 'dark';
+    btn.setAttribute('aria-pressed', String(dark));
+    btn.querySelector('.ms').textContent = dark ? 'light_mode' : 'dark_mode';
+    const label = dark ? 'Switch to light mode' : 'Switch to dark mode';
+    btn.setAttribute('aria-label', label); btn.title = label;
+  };
+  btn.addEventListener('click', () => {
+    const dark = root.getAttribute('data-theme') !== 'dark';
+    if (dark) root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme');
+    try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch (e) {}
+    sync();
+  });
+  sync();
+  document.querySelectorAll('.copy').forEach(b => b.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copied'; }
+    catch (e) { const r = document.createRange(); r.selectNodeContents(document.getElementById('ext-url')); getSelection().removeAllRanges(); getSelection().addRange(r); b.textContent = 'Selected'; }
+    setTimeout(() => (b.textContent = 'Copy'), 1600);
+  }));
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.querySelectorAll('video[autoplay]').forEach(v => { v.removeAttribute('autoplay'); v.pause(); v.controls = true; });
+})();
+</script>
+</body>
+</html>
